@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "schema-gen"
+version = "0.1.0"
+description = "Generation of database schemas from prompts using the validation loop pattern"
+authors = ["James <james@example.com>"]
+readme = "README.md"
+packages = [{include = "schema_gen"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+pydantic = ">=2.11.7"
+sqlalchemy = ">=2.0.36"
+langchain-core = "^0.3.0"
+langchain-openai = "^0.2.0"
+motleycrew = ">=0.3.4"
+psycopg2-binary = {version = "^2.9.9", optional = true}
+
+[tool.poetry.extras]
+postgres = ["psycopg2-binary"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
