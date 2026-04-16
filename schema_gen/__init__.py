@@ -24,14 +24,13 @@ Functions:
     - create_database_schema: Convenience function to create schema in database
 
 Example:
-    >>> from langchain_anthropic import ChatAnthropic
-    >>> from schema_gen import DatabaseSchema, create_sqlalchemy_tables
+    >>> from schema_gen import generate_sqlalchemy_models_from_prompt, create_sqlalchemy_tables
     >>> from sqlalchemy import MetaData
     >>>
-    >>> llm = ChatAnthropic(model="claude-sonnet-4-5-20250929")
-    >>> structured_llm = llm.with_structured_output(DatabaseSchema)
-    >>>
-    >>> schema = structured_llm.invoke("Create a blog schema with users and posts")
+    >>> schema = generate_sqlalchemy_models_from_prompt(
+    ...     "Create a blog schema with users and posts",
+    ...     model="anthropic/claude-sonnet-4-5-20250929",
+    ... )
     >>> metadata = MetaData()
     >>> tables = create_sqlalchemy_tables(schema, metadata)
 """

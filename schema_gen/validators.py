@@ -16,7 +16,7 @@ def validate_type_parameters(type_params, column_type, column_name: str):
     Raises:
         ValueError: If type parameters don't match the column type requirements
     """
-    from storyline.schema_gen.enums import SQLColumnType
+    from schema_gen.enums import SQLColumnType
 
     requires_length = column_type in {SQLColumnType.STRING, SQLColumnType.VARCHAR}
     requires_precision = column_type in {SQLColumnType.NUMERIC, SQLColumnType.DECIMAL}

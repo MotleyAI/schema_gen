@@ -10,9 +10,17 @@ packages = [{include = "schema_gen"}]
 python = ">=3.11,<4.0"
 pydantic = ">=2.11.7"
 sqlalchemy = ">=2.0.36"
-langchain-core = "^0.3.0"
-langchain-openai = "^0.2.0"
-motleycrew = ">=0.3.4"
+# Instructor 1.10+ eagerly imports all provider shims at top-level `import
+# instructor`, which breaks when some optional providers (e.g. mistralai 2.x,
+# which dropped top-level symbols) aren't fully installed. We use the latest
+# stable release and shim missing provider symbols at import time; see the
+# `_shim_missing_providers()` helper in schema_gen/structured_output_with_retries.py.
+instructor = ">=1.15.0"
+# Exact pin: versions 1.82.7 and 1.82.8 were compromised by the TeamPCP
+# supply-chain attack (March 2026). Do NOT relax to a caret or range that
+# allows those releases. 1.82.6 is the last confirmed-safe version.
+litellm = "==1.82.6"
+tenacity = ">=9.0.0"
 psycopg2-binary = {version = "^2.9.9", optional = true}
 
 [tool.poetry.extras]
