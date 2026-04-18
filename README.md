@@ -50,7 +50,8 @@ from schema_gen import generate_sqlalchemy_models_from_prompt
 
 # Generate schema from natural language. `model` is a LiteLLM model string;
 # the corresponding provider API key must be set in the environment
-# (e.g. OPENAI_API_KEY for openai/*, ANTHROPIC_API_KEY for anthropic/*).
+# the corresponding provider API key must be set in the environment
+# (e.g. OPENAI_API_KEY for openai/*).
 schema = generate_sqlalchemy_models_from_prompt(
     prompt="""
     Create a blog schema with:
@@ -58,7 +59,6 @@ schema = generate_sqlalchemy_models_from_prompt(
     - Posts with title, content, and timestamps
     - Comments on posts
     """,
-    model="openai/gpt-4o",
 )
 
 # Convert to SQLAlchemy ORM classes
@@ -157,7 +157,7 @@ The validation loop ensures generated schemas are correct:
 ```python
 def generate_sqlalchemy_models_from_prompt(
     prompt: str,
-    model: str = "anthropic/claude-sonnet-4-5-20250929",
+    model: str = "openai/gpt-4.1-mini",
     max_attempts: int = 3,
 ) -> DatabaseSchema:
     """
@@ -165,9 +165,9 @@ def generate_sqlalchemy_models_from_prompt(
 
     Args:
         prompt: Natural language description of the desired schema
-        model: LiteLLM model string (e.g. "openai/gpt-4o",
-               "anthropic/claude-sonnet-4-5-20250929"). The relevant provider
-               API key must be set in the environment.
+        model: LiteLLM model string (e.g. "openai/gpt-4.1-mini",
+               "openai/gpt-4o"). The relevant provider API key must be set in
+               the environment.
         max_attempts: Maximum number of LLM calls before giving up.
 
     Returns:
@@ -211,30 +211,23 @@ class TableDefinition(BaseModel):
 
 The library uses [LiteLLM](https://docs.litellm.ai/docs/providers) under the hood, so any provider LiteLLM supports works with the appropriate `provider/model` string and the corresponding API key in your environment:
 
-### OpenAI
+### OpenAI (default)
 
 ```python
+generate_sqlalchemy_models_from_prompt(prompt)  # uses openai/gpt-4.1-mini
 generate_sqlalchemy_models_from_prompt(prompt, model="openai/gpt-4o")
 # requires OPENAI_API_KEY
 ```
 
-### Anthropic Claude
-
-```python
-generate_sqlalchemy_models_from_prompt(prompt, model="anthropic/claude-sonnet-4-5-20250929")
-# requires ANTHROPIC_API_KEY
-```
-
 ### Other Providers
 
-See the [LiteLLM provider docs](https://docs.litellm.ai/docs/providers) for the full list — Azure, Cohere, Gemini, Ollama, Bedrock, etc.
+See the [LiteLLM provider docs](https://docs.litellm.ai/docs/providers) for the full list — Anthropic, Azure, Cohere, Gemini, Ollama, Bedrock, etc.
 
 ## Configuration
 
 ### Environment Variables
 
-- **`OPENAI_API_KEY`**: Required for OpenAI models
-- **`ANTHROPIC_API_KEY`**: Required for Anthropic models
+- **`OPENAI_API_KEY`**: Required for OpenAI models (default provider)
 
 ### Python Version
 
@@ -320,7 +313,7 @@ This library was extracted from the Storyline project for standalone use. Contri
 
 - **pydantic** (>=2.11.7) - Schema validation and type safety
 - **sqlalchemy** (>=2.0.36) - Database ORM and query building
-- **instructor** (>=1.6.0) - Structured output wrapper
-- **litellm** (==1.82.6) - Multi-provider LLM client. Pinned to 1.82.6 because versions 1.82.7 and 1.82.8 were compromised by a supply-chain attack (TeamPCP, March 2026).
+- **instructor** (>=1.15.0) - Structured output wrapper
+- **litellm** (>=1.83.0) - Multi-provider LLM client. Versions 1.82.7/1.82.8 were compromised (TeamPCP, March 2026) and removed from PyPI; 1.83.0+ uses a new secure CI/CD pipeline.
 - **tenacity** (>=9.0.0) - Retry logic
 - **psycopg2-binary** (optional) - PostgreSQL support

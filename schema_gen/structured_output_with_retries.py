@@ -73,7 +73,7 @@ def structured_output_with_retries(
     schema: Type[T],
     messages: list[dict],
     validation_callable: Callable[[T], Any],
-    model: str = "anthropic/claude-3-5-sonnet-20241022",
+    model: str = "openai/gpt-4.1-mini",
     max_attempts: int = 3,
     retry_exceptions: tuple[Type[Exception], ...] = (ValidationError,),
 ) -> Any:
@@ -166,7 +166,7 @@ if __name__ == "__main__":
             }
         ],
         validation_callable=validate_and_transform,
-        model="anthropic/claude-3-5-sonnet-20241022",
+        model="openai/gpt-4.1-mini",
         max_attempts=3,
         retry_exceptions=(ValidationError, ValueError),
     )

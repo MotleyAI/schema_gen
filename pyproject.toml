@@ -16,10 +16,9 @@ sqlalchemy = ">=2.0.36"
 # stable release and shim missing provider symbols at import time; see the
 # `_shim_missing_providers()` helper in schema_gen/structured_output_with_retries.py.
 instructor = ">=1.15.0"
-# Exact pin: versions 1.82.7 and 1.82.8 were compromised by the TeamPCP
-# supply-chain attack (March 2026). Do NOT relax to a caret or range that
-# allows those releases. 1.82.6 is the last confirmed-safe version.
-litellm = "==1.82.6"
+# Versions 1.82.7 and 1.82.8 were compromised (TeamPCP supply-chain attack,
+# March 2026) and removed from PyPI. 1.83.0+ uses a new secure CI/CD pipeline.
+litellm = ">=1.83.0"
 tenacity = ">=9.0.0"
 psycopg2-binary = {version = "^2.9.9", optional = true}
 
@@ -29,6 +28,10 @@ postgres = ["psycopg2-binary"]
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
 pytest-cov = "^4.1.0"
+
+[tool.pytest.ini_options]
+markers = ["integration: tests that call real LLM APIs (deselect with '-m \"not integration\"')"]
+addopts = "-m 'not integration'"
 
 [build-system]
 requires = ["poetry-core"]

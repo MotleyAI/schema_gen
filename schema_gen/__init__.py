@@ -29,7 +29,7 @@ Example:
     >>>
     >>> schema = generate_sqlalchemy_models_from_prompt(
     ...     "Create a blog schema with users and posts",
-    ...     model="anthropic/claude-sonnet-4-5-20250929",
+    ...     model="openai/gpt-4.1-mini",
     ... )
     >>> metadata = MetaData()
     >>> tables = create_sqlalchemy_tables(schema, metadata)

@@ -41,9 +41,8 @@ def main():
         print("  export OPENAI_API_KEY='your-api-key-here'")
         return
 
-    # LiteLLM model string (provider/model). Change provider prefix to switch
-    # providers, e.g. "anthropic/claude-sonnet-4-5-20250929".
-    model = "openai/gpt-4o"
+    # LiteLLM model string (provider/model).
+    model = "openai/gpt-4.1-mini"
 
     # Define schema prompt
     prompt = """

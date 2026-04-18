@@ -10,7 +10,7 @@ from schema_gen.structured_output_with_retries import structured_output_with_ret
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_MODEL = "anthropic/claude-sonnet-4-5-20250929"
+DEFAULT_MODEL = "openai/gpt-4.1-mini"
 
 
 _SCHEMA_PROMPT_TEMPLATE = """You are a database schema designer. Generate a complete database schema based on the user's requirements:
@@ -101,9 +101,9 @@ def generate_sqlalchemy_models_from_prompt(
 
     Args:
         prompt: Natural language description of the desired database schema
-        model: LiteLLM model string (e.g. "anthropic/claude-sonnet-4-5-20250929",
+        model: LiteLLM model string (e.g. "openai/gpt-4.1-mini",
                "openai/gpt-4o"). The relevant provider API key must be set in
-               the environment (e.g. ANTHROPIC_API_KEY, OPENAI_API_KEY).
+               the environment (e.g. OPENAI_API_KEY).
         max_attempts: Maximum number of LLM calls before giving up.
 
     Returns:
@@ -115,7 +115,7 @@ def generate_sqlalchemy_models_from_prompt(
     Example:
         >>> models = generate_sqlalchemy_models_from_prompt(
         ...     "Create a blog with users, posts, and comments",
-        ...     model="anthropic/claude-sonnet-4-5-20250929",
+        ...     model="openai/gpt-4.1-mini",
         ... ).to_orm_classes()
         >>> User = models['User']
         >>> Post = models['Post']
@@ -137,11 +137,8 @@ def generate_sqlalchemy_models_from_prompt(
         retry_exceptions=(ValidationError, ValueError),
     )
 
-    # Convert the validated schema to ORM classes (also acts as a final sanity check)
-    logger.info("Converting validated schema to ORM classes")
-    orm_classes = schema_result.to_orm_classes()
-
     logger.info(
-        f"Successfully generated {len(orm_classes)} ORM model classes: {list(orm_classes.keys())}"
+        f"Successfully generated schema with {len(schema_result.tables)} tables: "
+        f"{[t.name for t in schema_result.tables]}"
     )
     return schema_result
