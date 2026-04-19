@@ -50,7 +50,6 @@ from schema_gen import generate_sqlalchemy_models_from_prompt
 
 # Generate schema from natural language. `model` is a LiteLLM model string;
 # the corresponding provider API key must be set in the environment
-# the corresponding provider API key must be set in the environment
 # (e.g. OPENAI_API_KEY for openai/*).
 schema = generate_sqlalchemy_models_from_prompt(
     prompt="""
