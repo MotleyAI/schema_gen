@@ -46,21 +46,18 @@ pip install -e .
 ### Basic Usage
 
 ```python
-from langchain_openai import ChatOpenAI
-from schema_gen import generate_schema_from_prompt
+from schema_gen import generate_sqlalchemy_models_from_prompt
 
-# Initialize LLM
-llm = ChatOpenAI(model="gpt-4o")
-
-# Generate schema from natural language
-schema = generate_schema_from_prompt(
+# Generate schema from natural language. `model` is a LiteLLM model string;
+# the corresponding provider API key must be set in the environment
+# (e.g. OPENAI_API_KEY for openai/*).
+schema = generate_sqlalchemy_models_from_prompt(
     prompt="""
     Create a blog schema with:
     - Users who can write posts
     - Posts with title, content, and timestamps
     - Comments on posts
     """,
-    language_model=llm,
 )
 
 # Convert to SQLAlchemy ORM classes
@@ -121,9 +118,13 @@ poetry run python example.py
 
 #### LLM Generator (`schema_gen.llm_generator`)
 
-- **`generate_schema_from_prompt()`**: Main function that uses LLM with validation loop
+- **`generate_sqlalchemy_models_from_prompt()`**: Main function that uses an LLM with validation loop
 - **`post_process_schema()`**: Validates and post-processes generated schemas
 - Automatic retry logic if Pydantic validation or ORM conversion fails
+
+#### Structured Output Helper (`schema_gen.structured_output_with_retries`)
+
+- **`structured_output_with_retries()`**: Self-contained validation-loop helper built on [instructor](https://github.com/instructor-ai/instructor) + [litellm](https://github.com/BerriAI/litellm) + [tenacity](https://github.com/jd/tenacity). Forces the LLM to return a valid Pydantic instance and retries with the validation error text appended on failure.
 
 #### Database Setup (`schema_gen.setup_db`)
 
@@ -136,7 +137,7 @@ poetry run python example.py
 The validation loop ensures generated schemas are correct:
 
 1. **Prompt Construction**: Natural language description is formatted for the LLM
-2. **LLM Generation**: Uses `structured_output_with_retries` from MotleyCrew
+2. **LLM Generation**: Uses the local `structured_output_with_retries` helper (instructor + litellm)
 3. **Pydantic Validation**: Automatic validation of field types and constraints
 4. **Post-Processing**: Additional validation:
    - Verify foreign key references point to existing tables
@@ -150,27 +151,29 @@ The validation loop ensures generated schemas are correct:
 
 ### Main Functions
 
-#### `generate_schema_from_prompt()`
+#### `generate_sqlalchemy_models_from_prompt()`
 
 ```python
-def generate_schema_from_prompt(
+def generate_sqlalchemy_models_from_prompt(
     prompt: str,
-    language_model: BaseLanguageModel,
-    max_retries: int = 3,
+    model: str = "openai/gpt-4.1-mini",
+    max_attempts: int = 3,
 ) -> DatabaseSchema:
     """
     Generate a database schema from a natural language prompt.
 
     Args:
         prompt: Natural language description of the desired schema
-        language_model: LangChain LLM to use for generation
-        max_retries: Maximum number of retry attempts if validation fails
+        model: LiteLLM model string (e.g. "openai/gpt-4.1-mini",
+               "openai/gpt-4o"). The relevant provider API key must be set in
+               the environment.
+        max_attempts: Maximum number of LLM calls before giving up.
 
     Returns:
         DatabaseSchema: Validated schema that can be converted to ORM classes
 
     Raises:
-        ValueError: If schema generation fails after max_retries
+        RuntimeError: If schema generation fails after max_attempts
     """
 ```
 
@@ -205,34 +208,25 @@ class TableDefinition(BaseModel):
 
 ## LLM Providers
 
-The library works with any LangChain-compatible LLM:
+The library uses [LiteLLM](https://docs.litellm.ai/docs/providers) under the hood, so any provider LiteLLM supports works with the appropriate `provider/model` string and the corresponding API key in your environment:
 
-### OpenAI
-
-```python
-from langchain_openai import ChatOpenAI
-
-llm = ChatOpenAI(model="gpt-4o")
-```
-
-### Anthropic Claude
+### OpenAI (default)
 
 ```python
-from langchain_anthropic import ChatAnthropic
-
-llm = ChatAnthropic(model="claude-sonnet-4-5-20250929")
+generate_sqlalchemy_models_from_prompt(prompt)  # uses openai/gpt-4.1-mini
+generate_sqlalchemy_models_from_prompt(prompt, model="openai/gpt-4o")
+# requires OPENAI_API_KEY
 ```
 
 ### Other Providers
 
-Any LangChain `BaseLanguageModel` implementation will work with the appropriate setup.
+See the [LiteLLM provider docs](https://docs.litellm.ai/docs/providers) for the full list — Anthropic, Azure, Cohere, Gemini, Ollama, Bedrock, etc.
 
 ## Configuration
 
 ### Environment Variables
 
-- **`OPENAI_API_KEY`**: Required for OpenAI models
-- **`ANTHROPIC_API_KEY`**: Required for Anthropic models
+- **`OPENAI_API_KEY`**: Required for OpenAI models (default provider)
 
 ### Python Version
 
@@ -243,11 +237,10 @@ Requires Python 3.11 or higher.
 ### Custom Validation
 
 ```python
-from schema_gen import DatabaseSchema
-from schema_gen.validators import post_process_schema
+from schema_gen import DatabaseSchema, generate_sqlalchemy_models_from_prompt, post_process_schema
 
 # Generate schema
-schema = generate_schema_from_prompt(prompt, llm)
+schema = generate_sqlalchemy_models_from_prompt(prompt, model="openai/gpt-4o")
 
 # Additional custom validation
 schema = post_process_schema(schema)
@@ -290,7 +283,7 @@ Create an e-commerce schema with:
 - Payments for orders
 """
 
-schema = generate_schema_from_prompt(prompt, llm)
+schema = generate_sqlalchemy_models_from_prompt(prompt, model="openai/gpt-4o")
 ```
 
 ### SaaS Application
@@ -304,7 +297,7 @@ Create a multi-tenant SaaS schema with:
 - Usage metrics tracked per organization
 """
 
-schema = generate_schema_from_prompt(prompt, llm)
+schema = generate_sqlalchemy_models_from_prompt(prompt, model="openai/gpt-4o")
 ```
 
 ## License
@@ -319,7 +312,7 @@ This library was extracted from the Storyline project for standalone use. Contri
 
 - **pydantic** (>=2.11.7) - Schema validation and type safety
 - **sqlalchemy** (>=2.0.36) - Database ORM and query building
-- **langchain-core** - LLM interface abstraction
-- **langchain-openai** - OpenAI integration
-- **motleycrew** (>=0.3.4) - Validation loop with structured output
+- **instructor** (>=1.15.0) - Structured output wrapper
+- **litellm** (>=1.83.0) - Multi-provider LLM client. Versions 1.82.7/1.82.8 were compromised (TeamPCP, March 2026) and removed from PyPI; 1.83.0+ uses a new secure CI/CD pipeline.
+- **tenacity** (>=9.0.0) - Retry logic
 - **psycopg2-binary** (optional) - PostgreSQL support

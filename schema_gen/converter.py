@@ -24,7 +24,7 @@ try:
 except ImportError:
     HAS_POSTGRESQL = False
 
-from storyline.schema_gen.enums import SQLColumnType
+from schema_gen.enums import SQLColumnType
 
 # Mapping from SQLColumnType enum to SQLAlchemy type classes
 SQLALCHEMY_TYPE_MAP = {

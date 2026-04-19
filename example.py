@@ -16,7 +16,6 @@ import os
 import logging
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
-from langchain_openai import ChatOpenAI
 
 from schema_gen import generate_sqlalchemy_models_from_prompt
 
@@ -35,16 +34,15 @@ def main():
     print("LLM-Driven Database Schema Generation Example")
     print("=" * 80)
 
-    # Check for API key
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
+    # Check for API key (litellm reads this directly from the environment)
+    if not os.getenv("OPENAI_API_KEY"):
         print("\nError: OPENAI_API_KEY environment variable not set")
         print("Please set your OpenAI API key:")
         print("  export OPENAI_API_KEY='your-api-key-here'")
         return
 
-    # Initialize LLM
-    llm = ChatOpenAI(model="gpt-4o", api_key=api_key)
+    # LiteLLM model string (provider/model).
+    model = "openai/gpt-4.1-mini"
 
     # Define schema prompt
     prompt = """
@@ -65,7 +63,7 @@ def main():
         # Generate schema using validation loop pattern
         schema = generate_sqlalchemy_models_from_prompt(
             prompt=prompt,
-            language_model=llm,
+            model=model,
         )
 
         print(f"\nGenerated schema with {len(schema.tables)} tables:")

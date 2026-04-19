@@ -32,9 +32,9 @@ from sqlalchemy.types import (
     TypeDecorator,
 )
 
-from storyline.schema_gen.converter import HAS_POSTGRESQL, SQLALCHEMY_TYPE_MAP
-from storyline.schema_gen.enums import SQLColumnType, ForeignKeyAction, IndexType
-from storyline.schema_gen import validators
+from schema_gen.converter import HAS_POSTGRESQL, SQLALCHEMY_TYPE_MAP
+from schema_gen.enums import SQLColumnType, ForeignKeyAction, IndexType
+from schema_gen import validators
 from sqlalchemy.orm import declarative_base, mapped_column, relationship, DeclarativeBase
 
 if HAS_POSTGRESQL:
